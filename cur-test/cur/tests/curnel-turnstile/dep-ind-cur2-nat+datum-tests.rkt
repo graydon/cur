@@ -2,7 +2,7 @@
 (require cur/curnel/turnstile-impl/dep-ind-cur2+sugar
          cur/curnel/turnstile-impl/dep-ind-cur2+eq2
          cur/curnel/turnstile-impl/dep-ind-cur2+nat+datum
-         turnstile/rackunit-typechecking)
+         rackunit/turnstile)
 
 ; Π → λ ∀ ≻ ⊢ ≫ ⇒
 
@@ -18,7 +18,7 @@
 (check-type 2 : Nat -> 2)
 
 (define nat-rec
-  (λ [C : *]
+  (λ [C : Type]
     (λ [zc : C][sc : (→ C C)]
       (λ [n : Nat]
         (elim-Nat n

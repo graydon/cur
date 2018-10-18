@@ -1,7 +1,7 @@
 #lang s-exp "../main.rkt"
 
 ;; TODO: override (all-defined-out) to enable exporting these properly.
-(provide #%datum Nat
+(provide #%datum Nat elim-Nat
          z s (for-syntax ~z ~s)
          add1 sub1 plus mult zero? exp square nat-equal? even? odd?)
 
@@ -196,14 +196,11 @@
    [⊢ n2 ≫ n2- ⇐ Nat]
    ------------------
    [⊢ (eval-exp n1- n2-) ⇒ Nat]])
-(define/rec/match exp : Nat [e : Nat] -> Nat
+(define/rec/match exp : [e : Nat] Nat -> Nat
   [z => (s z)]
-  [(s x) => (mult e (exp x e))])
+  [(s x) => (mult e (exp e x))])
 
-;; TODO: dont need run?
-;(define square (run (exp (s (s z)))))
-;; tests curry (ie, non-full application) of exp
-(define square (exp (s (s z))))
+(define (square [n : Nat]) (exp n (s (s z))))
 
 #;(define-red eval-zero?
   ;; TODO: this ~z triggers nonid case bc it gets moved to "head" in define-red, in eval.rkt
@@ -274,7 +271,8 @@
 ;;          [z true]
 ;;          [(s n) false]))]])
 
-;; nat-equal? with single match
+;; nat-equal? with single match,
+;; also tests nested match
 #;(define/rec/match nat-equal? : Nat [n : Nat] -> Bool
   [z => (match n #:return Bool [z true] [(s x) false])]
   [(s x) => (match n #:return Bool [z false] [(s y) (nat-equal? x y)])])
@@ -356,8 +354,8 @@
      (not (even? n-1))]))
 (define/rec/match even? : Nat -> Bool
   [z => true]
-;  [(s n-1) => (not (even? n-1))])
   [(s n-1) => (odd? n-1)])
 
 (define (odd? (n : Nat))
   (not (even? n)))
+

@@ -1,7 +1,7 @@
 #lang s-exp cur/curnel/turnstile-impl/dep-ind-cur2
 (require cur/curnel/turnstile-impl/dep-ind-cur2+sugar
          cur/curnel/turnstile-impl/dep-ind-cur2+data
-         turnstile/rackunit-typechecking)
+         rackunit/turnstile)
 
 ; Π → λ ∀ ≻ ⊢ ≫ ⇒
 
@@ -17,7 +17,7 @@
 (define-datatype my= [A : (Type 0)] : [a : A] [b : A] -> (Type 0)
   (my-refl : (Π [A : (Type 0)] (Π [a : A] (my= A a a)))))
 
-(define-datatype Nat : *
+(define-datatype Nat : Type
   [Z : Nat]
   [S : (→ Nat Nat)])
 

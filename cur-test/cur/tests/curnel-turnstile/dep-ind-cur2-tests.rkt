@@ -2,7 +2,7 @@
 (require cur/curnel/turnstile-impl/dep-ind-cur2+eq
          cur/curnel/turnstile-impl/dep-ind-cur2+data
          cur/curnel/turnstile-impl/dep-ind-cur2+sugar
-         turnstile/rackunit-typechecking)
+         rackunit/turnstile)
 
 ; Π → λ ∀ ≻ ⊢ ≫ ⇒
 
@@ -44,7 +44,7 @@
 
 ;; Peano nums -----------------------------------------------------------------
 
-(define-datatype Nat : *
+(define-datatype Nat : Type
   [Z : Nat]
   [S : (→ Nat Nat)])
 
@@ -62,7 +62,7 @@
 (check-type (S (S Z)) : Nat -> (S (S Z)))
 
 (define nat-rec
-  (λ [C : *]
+  (λ [C : Type]
     (λ [zc : C][sc : (→ C C)]
       (λ [n : Nat]
         (elim-Nat n

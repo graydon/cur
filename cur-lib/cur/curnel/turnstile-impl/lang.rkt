@@ -18,10 +18,12 @@
          (rename-out [λ lambda]))
 
 (require (only-in turnstile/base
-                  define-typed-syntax get-orig assign-type subst substs typecheck? typechecks? typeof)
+                  define-typed-syntax get-orig assign-type
+                  subst substs typecheck? typechecks? typeof)
          turnstile/eval
+         (only-in turnstile/typedefs get-type-info)
          (for-syntax macrotypes/stx-utils syntax/stx))
-(provide (all-from-out turnstile/base turnstile/eval))
+(provide (all-from-out turnstile/base turnstile/eval turnstile/typedefs))
 
 (require "dep-ind-cur2+data2.rkt")
 (provide (all-from-out "dep-ind-cur2+data2.rkt"))
@@ -49,8 +51,14 @@
 
 ;; TODO: currently, dont expand TY or tyC, bc of unbound TY
 ;; - but this means that curried form wont be handled
-(define-typed-syntax (data TY:id (~datum :) n:exact-nonnegative-integer ty
-                           [C:id (~datum :) tyC] ...) ≫
+(define-typed-syntax data
+  [(_ TY:id (~datum :) n:exact-nonnegative-integer ty
+      [C:id (~datum :) tyC] ...) ≫
+   #:when (zero? (stx-e #'n)) ; simple case, no params
+  -----------------
+  [≻ (define-datatype TY : ty [C : tyC] ...)]]
+  [(_ TY:id (~datum :) n:exact-nonnegative-integer ty
+      [C:id (~datum :) tyC] ...) ≫
   ;; [⊢ ty ≫ ty- ⇐ Type] ; use unexpanded
   ;; [⊢ tyC ≫ tyC- ⇐ Type] ... ; ow, must use ~unbound as in dep-ind-cur2+data2
   #:with [([A tyA] ...) ty-rst] (take-Π #'ty (stx-e #'n))
@@ -63,7 +71,7 @@
   ;;            [C : [x : tyx] ... -> tyC0] ...)))]
   -----------------
   [≻ (define-datatype TY [A : tyA] ... : [i : tyi] ... -> ty0
-       [C : [x : tyx] ... -> tyC0] ...)])
+       [C : [x : tyx] ... -> tyC0] ...)]])
 
 (define-typed-syntax (elim ty:id motive (method ...) target) ≫
   #:with elim-Name (format-id #'ty "elim-~a" #'ty)
@@ -72,9 +80,7 @@
 
 (define-typed-syntax (new-elim target motive method ...) ≫
   [⊢ target ≫ target- ⇒ τ]
-  #:do[(define exinfo (syntax-property #'τ 'extra))]
-  #:fail-unless exinfo (format "could not infer extra info from type ~a" (syntax->datum #'τ))
-  #:with (elim-Name _ ...) (or (and (pair? exinfo) (car exinfo)) exinfo)
+  #:with (elim-Name . _) (get-type-info #'τ)
   ---
   [≻ (elim-Name target- motive method ...)])
 
